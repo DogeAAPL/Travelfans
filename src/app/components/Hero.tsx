@@ -1,7 +1,9 @@
 import { MapPin, Calendar, Users, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useContent } from '../context/ContentContext';
 
 export function Hero() {
+  const { content } = useContent();
   const [searchData, setSearchData] = useState({
     destination: '',
     date: '',
@@ -24,14 +26,14 @@ export function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-7xl text-white mb-6">
-            Tu Próxima Aventura
+            {content.heroTitle.split(' ').slice(0, 3).join(' ')}
             <br />
             <span className="bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-              Comienza Aquí
+              {content.heroTitle.split(' ').slice(3).join(' ')}
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
-            Perú, Colombia, Panamá y Brasil te esperan. Cotiza tu viaje por WhatsApp en minutos
+            {content.heroSubtitle}
           </p>
         </div>
 
@@ -74,7 +76,7 @@ export function Hero() {
           </div>
 
           <a
-            href="https://wa.me/5491123456789?text=Hola!%20Quiero%20cotizar%20un%20viaje"
+            href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20viaje`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white py-4 rounded-lg flex items-center justify-center gap-2 hover:shadow-xl transition-all"
@@ -85,22 +87,12 @@ export function Hero() {
         </div>
 
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-white text-center">
-          <div>
-            <div className="text-4xl mb-2">4</div>
-            <div className="text-white/80">Países Destacados</div>
-          </div>
-          <div>
-            <div className="text-4xl mb-2">5K+</div>
-            <div className="text-white/80">Viajeros Felices</div>
-          </div>
-          <div>
-            <div className="text-4xl mb-2">100%</div>
-            <div className="text-white/80">Personalizado</div>
-          </div>
-          <div>
-            <div className="text-4xl mb-2">24/7</div>
-            <div className="text-white/80">WhatsApp</div>
-          </div>
+          {content.heroStats.map((stat, index) => (
+            <div key={index}>
+              <div className="text-4xl mb-2">{stat.value}</div>
+              <div className="text-white/80">{stat.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1,33 +1,8 @@
 import { Star, Quote, MessageCircle } from 'lucide-react';
-
-const testimonials = [
-  {
-    id: 1,
-    name: 'María González',
-    location: 'Madrid, España',
-    rating: 5,
-    text: 'Mi viaje a Perú fue increíble. La atención por WhatsApp fue rápida y personalizada. Machu Picchu superó todas mis expectativas. ¡Gracias TravelFans!',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400'
-  },
-  {
-    id: 2,
-    name: 'Carlos Ruiz',
-    location: 'Buenos Aires, Argentina',
-    rating: 5,
-    text: 'Cartagena fue mágica. Todo el proceso de cotización por WhatsApp fue súper fácil y rápido. La mejor experiencia de viaje que he tenido.',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'
-  },
-  {
-    id: 3,
-    name: 'Ana Martínez',
-    location: 'Ciudad de México, México',
-    rating: 5,
-    text: 'Brasil fue un sueño hecho realidad. El equipo de TravelFans respondió todas mis dudas al instante por WhatsApp. ¡100% recomendado!',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400'
-  }
-];
+import { useContent } from '../context/ContentContext';
 
 export function Testimonials() {
+  const { content } = useContent();
   return (
     <section id="testimonios" className="py-20 bg-gradient-to-b from-purple-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,7 +18,7 @@ export function Testimonials() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
+          {content.testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
               className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all relative"
@@ -83,7 +58,7 @@ export function Testimonials() {
             Únete a miles de viajeros satisfechos y descubre el mundo con nosotros
           </p>
           <a
-            href="https://wa.me/5491123456789?text=Hola!%20Quiero%20planificar%20mi%20próximo%20viaje"
+            href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20planificar%20mi%20próximo%20viaje`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-white text-[#c026d3] px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transition-all"

@@ -1,56 +1,14 @@
 import { Check, Plane, Hotel, Camera, MessageCircle } from 'lucide-react';
+import { useContent } from '../context/ContentContext';
 
-const packages = [
-  {
-    id: 1,
-    name: 'Aventura Caribe',
-    duration: '5 días / 4 noches',
-    destinations: 'Cartagena, Colombia',
-    popular: false,
-    features: [
-      'Vuelos incluidos',
-      'Hotel boutique',
-      'Desayunos',
-      'City tour',
-      'Playas del Caribe'
-    ],
-    icon: Hotel
-  },
-  {
-    id: 2,
-    name: 'Maravillas del Perú',
-    duration: '7 días / 6 noches',
-    destinations: 'Lima, Cusco y Machu Picchu',
-    popular: true,
-    features: [
-      'Vuelos nacionales',
-      'Hoteles 4 estrellas',
-      'Desayunos incluidos',
-      'Entrada a Machu Picchu',
-      'Guía en español',
-      'Traslados privados'
-    ],
-    icon: Camera
-  },
-  {
-    id: 3,
-    name: 'Brasil Completo',
-    duration: '10 días / 9 noches',
-    destinations: 'Río, Salvador y Amazonas',
-    popular: false,
-    features: [
-      'Vuelos incluidos',
-      'Hoteles premium',
-      'Desayunos',
-      'Cristo Redentor',
-      'Tour del Amazonas',
-      'Playas de Río'
-    ],
-    icon: Plane
-  }
-];
+const iconMap = {
+  1: Hotel,
+  2: Camera,
+  3: Plane
+};
 
 export function Packages() {
+  const { content } = useContent();
   return (
     <section id="paquetes" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,8 +24,8 @@ export function Packages() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {packages.map((pkg) => {
-            const Icon = pkg.icon;
+          {content.packages.map((pkg) => {
+            const Icon = iconMap[pkg.id as keyof typeof iconMap] || Hotel;
             return (
               <div
                 key={pkg.id}
@@ -111,7 +69,7 @@ export function Packages() {
                 </ul>
 
                 <a
-                  href={`https://wa.me/5491123456789?text=Hola!%20Quiero%20cotizar%20el%20paquete%20${pkg.name}`}
+                  href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20el%20paquete%20${pkg.name}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`w-full py-3 rounded-full font-semibold transition-all flex items-center justify-center gap-2 ${

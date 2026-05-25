@@ -1,49 +1,8 @@
 import { Star, MapPin, MessageCircle } from 'lucide-react';
-
-const destinations = [
-  {
-    id: 1,
-    name: 'Perú',
-    location: 'Machu Picchu',
-    image: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxNYWNodSUyMFBpY2NodSUyMFBlcnV8ZW58MXx8fHwxNzc4Nzg2MzkyfDA&ixlib=rb-4.1.0&q=80&w=1080',
-    rating: 4.9,
-    reviews: 524,
-    highlights: ['Machu Picchu', 'Cusco', 'Lima', 'Valle Sagrado'],
-    description: 'Descubre la magia de los Incas'
-  },
-  {
-    id: 2,
-    name: 'Colombia',
-    location: 'Cartagena',
-    image: 'https://images.unsplash.com/photo-1583531352515-8884af319dc1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxDYXJ0YWdlbmElMjBDb2xvbWJpYSUyMGNvbG9yZnVsfGVufDF8fHx8MTc3ODc4NjM5M3ww&ixlib=rb-4.1.0&q=80&w=1080',
-    rating: 4.8,
-    reviews: 467,
-    highlights: ['Cartagena', 'Bogotá', 'Medellín', 'Eje Cafetero'],
-    description: 'Color y cultura en el Caribe'
-  },
-  {
-    id: 3,
-    name: 'Panamá',
-    location: 'Ciudad de Panamá',
-    image: 'https://images.unsplash.com/photo-1598041543955-0d88c390f3b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxQYW5hbWElMjBDaXR5JTIwc2t5bGluZXxlbnwxfHx8fDE3Nzg3ODYzOTN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    rating: 4.7,
-    reviews: 389,
-    highlights: ['Ciudad de Panamá', 'Bocas del Toro', 'San Blas', 'Canal'],
-    description: 'Modernidad y playas paradisíacas'
-  },
-  {
-    id: 4,
-    name: 'Brasil',
-    location: 'Río de Janeiro',
-    image: 'https://images.unsplash.com/photo-1518639192441-8fce0a366e2e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxSaW8lMjBkZSUyMEphbmVpcm8lMjBCcmF6aWwlMjBDaHJpc3R8ZW58MXx8fHwxNzc4Nzg2Mzk0fDA&ixlib=rb-4.1.0&q=80&w=1080',
-    rating: 4.9,
-    reviews: 612,
-    highlights: ['Río de Janeiro', 'Salvador', 'Amazonas', 'Iguazú'],
-    description: 'Samba, playas y naturaleza exuberante'
-  }
-];
+import { useContent } from '../context/ContentContext';
 
 export function Destinations() {
+  const { content } = useContent();
   return (
     <section id="destinos" className="py-20 bg-gradient-to-b from-white to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,7 +18,7 @@ export function Destinations() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {destinations.map((destination) => (
+          {content.destinations.map((destination) => (
             <div
               key={destination.id}
               className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
@@ -98,7 +57,7 @@ export function Destinations() {
                 </div>
 
                 <a
-                  href={`https://wa.me/5491123456789?text=Hola!%20Quiero%20cotizar%20un%20paquete%20a%20${destination.name}`}
+                  href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20paquete%20a%20${destination.name}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-3 rounded-full flex items-center justify-center gap-2 hover:shadow-lg transition-all"

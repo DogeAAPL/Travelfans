@@ -1,12 +1,24 @@
-import { Plane, Menu, X, MessageCircle } from 'lucide-react';
+import { Menu, X, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useContent } from '../context/ContentContext';
+import logo from '../../imports/Travelfans_logo.png';
 
 export function Navbar() {
+  const { content } = useContent();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
-    element?.scrollIntoView({ behavior: 'smooth' });
+    if (element) {
+      const offset = 80; // Offset para el navbar
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
     setIsMenuOpen(false);
   };
 
@@ -14,13 +26,12 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#c026d3] to-[#a855f7] rounded-lg flex items-center justify-center">
-              <Plane className="w-6 h-6 text-white" />
-            </div>
-            <span className="bg-gradient-to-r from-[#c026d3] to-[#a855f7] bg-clip-text text-transparent font-bold text-xl">
-              TravelFans
-            </span>
+          <div className="flex items-center">
+            <img
+              src={logo}
+              alt="TravelFans"
+              className="h-12 md:h-14 w-auto"
+            />
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -49,7 +60,7 @@ export function Navbar() {
               Opiniones
             </button>
             <a
-              href="https://wa.me/5491123456789?text=Hola!%20Quiero%20cotizar%20un%20viaje"
+              href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20viaje`}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-2 rounded-full hover:shadow-lg transition-all flex items-center gap-2"
@@ -96,7 +107,7 @@ export function Navbar() {
               Opiniones
             </button>
             <a
-              href="https://wa.me/5491123456789?text=Hola!%20Quiero%20cotizar%20un%20viaje"
+              href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20viaje`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-2 rounded-full text-center"
