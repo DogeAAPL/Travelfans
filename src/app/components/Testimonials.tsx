@@ -1,5 +1,6 @@
 import { Star, Quote, MessageCircle } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
+import { Carousel } from './Carousel';
 
 export function Testimonials() {
   const { content } = useContent();
@@ -17,11 +18,12 @@ export function Testimonials() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="relative pb-2">
+          <Carousel>
           {content.testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
-              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all relative"
+              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all relative h-full"
             >
               <Quote className="absolute top-6 right-6 w-12 h-12 text-purple-100" />
 
@@ -48,6 +50,7 @@ export function Testimonials() {
               </p>
             </div>
           ))}
+          </Carousel>
         </div>
 
         <div className="mt-16 bg-gradient-to-r from-[#c026d3] to-[#a855f7] rounded-2xl p-12 text-center text-white">

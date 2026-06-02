@@ -1,7 +1,7 @@
 
-  # Diseñar vistas agencia de viajes
+  # TravelFans
 
-  This is a code bundle for Diseñar vistas agencia de viajes. The original project is available at https://www.figma.com/design/PrT5Zj0nbr7fln85A744GZ/Dise%C3%B1ar-vistas-agencia-de-viajes.
+  This is a code bundle for TravelFans. The original project is available at https://www.figma.com/design/PrT5Zj0nbr7fln85A744GZ/TravelFans.
 
   ## Running the code
 

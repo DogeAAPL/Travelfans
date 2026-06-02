@@ -1,5 +1,6 @@
 import { Star, MapPin, MessageCircle } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
+import { Carousel } from './Carousel';
 
 export function Destinations() {
   const { content } = useContent();
@@ -17,11 +18,12 @@ export function Destinations() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="relative pb-2">
+          <Carousel>
           {content.destinations.map((destination) => (
             <div
               key={destination.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
+              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full"
             >
               <div className="relative h-64 overflow-hidden">
                 <img
@@ -68,6 +70,7 @@ export function Destinations() {
               </div>
             </div>
           ))}
+          </Carousel>
         </div>
       </div>
     </section>

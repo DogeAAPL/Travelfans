@@ -1,10 +1,18 @@
-import { Check, Plane, Hotel, Camera, MessageCircle } from 'lucide-react';
+import { Check, Plane, Hotel, Camera, MessageCircle, Briefcase } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
+import { Carousel } from './Carousel';
 
-const iconMap = {
+const iconMap: Record<number, any> = {
   1: Hotel,
   2: Camera,
-  3: Plane
+  3: Plane,
+  4: Briefcase,
+  5: Hotel,
+  6: Camera,
+  7: Plane,
+  8: Briefcase,
+  9: Hotel,
+  10: Camera
 };
 
 export function Packages() {
@@ -23,23 +31,25 @@ export function Packages() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="relative py-6">
+          <Carousel>
           {content.packages.map((pkg) => {
-            const Icon = iconMap[pkg.id as keyof typeof iconMap] || Hotel;
+            const Icon = iconMap[pkg.id] || Hotel;
             return (
-              <div
-                key={pkg.id}
-                className={`relative bg-white rounded-2xl p-8 transition-all duration-300 ${
-                  pkg.popular
-                    ? 'border-2 border-[#a855f7] shadow-2xl scale-105'
-                    : 'border-2 border-gray-200 hover:border-[#a855f7] hover:shadow-xl'
-                }`}
-              >
-                {pkg.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-1 rounded-full text-sm font-semibold">
-                    Más Popular
-                  </div>
-                )}
+              <div className={pkg.popular ? 'pt-2' : ''}>
+                <div
+                  key={pkg.id}
+                  className={`relative bg-white rounded-2xl p-8 transition-all duration-300 h-full ${
+                    pkg.popular
+                      ? 'border-2 border-[#a855f7] shadow-2xl'
+                      : 'border-2 border-gray-200 hover:border-[#a855f7] hover:shadow-xl'
+                  }`}
+                >
+                  {pkg.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
+                      Más Popular
+                    </div>
+                  )}
 
                 <div className="flex flex-col items-center mb-6">
                   <div className="w-16 h-16 bg-gradient-to-br from-[#c026d3] to-[#a855f7] rounded-full flex items-center justify-center mb-4">
@@ -81,9 +91,11 @@ export function Packages() {
                   <MessageCircle className="w-4 h-4" />
                   Cotizar por WhatsApp
                 </a>
+                </div>
               </div>
             );
           })}
+          </Carousel>
         </div>
       </div>
     </section>

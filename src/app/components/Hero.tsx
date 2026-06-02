@@ -75,15 +75,38 @@ export function Hero() {
             </div>
           </div>
 
-          <a
-            href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20viaje`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => {
+              let message = 'Hola! Quiero cotizar un viaje';
+
+              if (searchData.destination || searchData.date || searchData.travelers !== '1') {
+                message = 'Hola! Quiero cotizar un viaje con los siguientes detalles:\n';
+
+                if (searchData.destination) {
+                  message += `\n📍 Destino: ${searchData.destination}`;
+                }
+                if (searchData.date) {
+                  const dateObj = new Date(searchData.date + 'T00:00:00');
+              const formattedDate = dateObj.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              });
+                  message += `\n📅 Fecha: ${formattedDate}`;
+                }
+                if (searchData.travelers !== '1') {
+                  message += `\n👥 Viajeros: ${searchData.travelers === '4' ? '4+' : searchData.travelers}`;
+                }
+              }
+
+              const whatsappUrl = `https://wa.me/${content.whatsappNumber}?text=${encodeURIComponent(message)}`;
+              window.open(whatsappUrl, '_blank');
+            }}
             className="w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white py-4 rounded-lg flex items-center justify-center gap-2 hover:shadow-xl transition-all"
           >
             <MessageCircle className="w-5 h-5" />
             Cotizar por WhatsApp
-          </a>
+          </button>
         </div>
 
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-white text-center">
