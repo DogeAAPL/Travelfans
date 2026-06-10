@@ -56,11 +56,11 @@ export function ImageUpload({ currentImage, onImageChange, label = 'Imagen' }: I
 
       {/* Preview */}
       {preview && (
-        <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-gray-200">
+        <div className="relative w-full rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center" style={{ minHeight: '10rem' }}>
           <img
             src={preview}
             alt="Preview"
-            className="w-full h-full object-cover"
+            className="max-w-full max-h-48 object-contain"
           />
           <button
             onClick={handleRemove}

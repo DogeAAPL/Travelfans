@@ -3,6 +3,18 @@ import { useState, useEffect } from 'react';
 
 export function SideNav() {
   const [activeSection, setActiveSection] = useState('inicio');
+  const [headerVisible, setHeaderVisible] = useState(true);
+
+  useEffect(() => {
+    const heroSection = document.getElementById('inicio');
+    if (!heroSection) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeaderVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(heroSection);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,6 +59,8 @@ export function SideNav() {
     { id: 'paquetes', icon: Briefcase, label: 'Paquetes' },
     { id: 'testimonios', icon: Quote, label: 'Opiniones' }
   ];
+
+  if (headerVisible) return null;
 
   return (
     <nav className="fixed left-4 top-1/2 -translate-y-1/2 z-40 hidden lg:block group/nav">

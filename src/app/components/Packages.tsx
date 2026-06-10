@@ -36,9 +36,8 @@ export function Packages() {
           {content.packages.map((pkg) => {
             const Icon = iconMap[pkg.id] || Hotel;
             return (
-              <div className={pkg.popular ? 'pt-2' : ''}>
+              <div key={pkg.id} className={pkg.popular ? 'pt-2' : ''}>
                 <div
-                  key={pkg.id}
                   className={`relative bg-white rounded-2xl p-8 transition-all duration-300 h-full ${
                     pkg.popular
                       ? 'border-2 border-[#a855f7] shadow-2xl'
