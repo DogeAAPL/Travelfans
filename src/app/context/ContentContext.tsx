@@ -167,7 +167,7 @@ const defaultContent: ContentData = {
       image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400'
     }
   ],
-  whatsappNumber: '5491123456789'
+  whatsappNumber: '573156060833'
 };
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);

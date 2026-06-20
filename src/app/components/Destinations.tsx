@@ -5,7 +5,7 @@ import { Carousel } from './Carousel';
 export function Destinations() {
   const { content } = useContent();
   return (
-    <section id="destinos" className="py-20 bg-gradient-to-b from-white to-purple-50">
+    <section id="destinos" className="py-32 bg-gradient-to-b from-white to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl mb-4">
@@ -18,18 +18,18 @@ export function Destinations() {
           </p>
         </div>
 
-        <div className="relative pb-2">
+        <div className="relative py-12 px-0">
           <Carousel>
           {content.destinations.map((destination) => (
             <div
               key={destination.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full"
+              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full flex flex-col"
             >
               <div className="relative h-64 overflow-hidden">
                 <img
                   src={destination.image}
                   alt={destination.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -38,14 +38,14 @@ export function Destinations() {
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-6 flex flex-col flex-grow">
                 <div className="flex items-center gap-2 text-[#a855f7] mb-2">
                   <MapPin className="w-4 h-4" />
                   <span className="text-sm">{destination.location}</span>
                 </div>
 
                 <h3 className="text-2xl mb-3">{destination.name}</h3>
-                <p className="text-gray-600 mb-4">{destination.description}</p>
+                <p className="text-gray-600 mb-4 flex-grow">{destination.description}</p>
 
                 <div className="mb-4">
                   <div className="text-sm text-gray-500 mb-2">Incluye:</div>
@@ -62,7 +62,7 @@ export function Destinations() {
                   href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20paquete%20a%20${destination.name}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-3 rounded-full flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                  className="w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-3 rounded-full flex items-center justify-center gap-2 hover:shadow-lg transition-all mt-auto"
                 >
                   <MessageCircle className="w-4 h-4" />
                   Cotizar Ahora

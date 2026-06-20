@@ -18,7 +18,7 @@ const iconMap: Record<number, any> = {
 export function Packages() {
   const { content } = useContent();
   return (
-    <section id="paquetes" className="py-20 bg-white">
+    <section id="paquetes" className="py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl mb-4">
@@ -31,17 +31,17 @@ export function Packages() {
           </p>
         </div>
 
-        <div className="relative py-6">
+        <div className="relative py-12 px-0">
           <Carousel>
           {content.packages.map((pkg) => {
             const Icon = iconMap[pkg.id] || Hotel;
             return (
-              <div key={pkg.id} className={pkg.popular ? 'pt-2' : ''}>
+              <div key={pkg.id} className={`${pkg.popular ? 'md:scale-105 md:z-10' : ''} transition-transform`}>
                 <div
-                  className={`relative bg-white rounded-2xl p-8 transition-all duration-300 h-full ${
+                  className={`relative bg-white rounded-2xl p-6 transition-all duration-300 h-full flex flex-col shadow-md hover:shadow-lg ${
                     pkg.popular
-                      ? 'border-2 border-[#a855f7] shadow-2xl'
-                      : 'border-2 border-gray-200 hover:border-[#a855f7] hover:shadow-xl'
+                      ? 'border-2 border-[#a855f7]'
+                      : 'border-2 border-gray-200 hover:border-[#a855f7]'
                   }`}
                 >
                   {pkg.popular && (
@@ -66,13 +66,13 @@ export function Packages() {
                   <p className="text-gray-500 text-sm">Cotiza por WhatsApp</p>
                 </div>
 
-                <ul className="space-y-4 mb-8">
-                  {pkg.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className="mt-1">
-                        <Check className="w-5 h-5 text-[#a855f7]" />
+                <ul className="space-y-2 mb-6">
+                  {pkg.features.slice(0, 3).map((feature, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="mt-0.5 flex-shrink-0">
+                        <Check className="w-4 h-4 text-[#a855f7]" />
                       </div>
-                      <span className="text-gray-700">{feature}</span>
+                      <span className="text-gray-700 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>

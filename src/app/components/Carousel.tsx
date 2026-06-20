@@ -43,11 +43,11 @@ export function Carousel({ children, options = {} }: CarouselProps) {
   }, [emblaApi, onSelect]);
 
   return (
-    <div className="relative px-1">
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex -ml-4 md:-ml-6">
+    <div className="relative w-full px-4 sm:px-6 lg:px-8">
+      <div className="overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8" ref={emblaRef}>
+        <div className="flex gap-4 md:gap-6 px-4 sm:px-6 lg:px-8">
           {children.map((child, index) => (
-            <div key={index} className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-4 md:pl-6">
+            <div key={index} className="flex-[0_0_calc((100%-1rem)/3)] min-w-0 sm:flex-[0_0_calc((100%-1rem)/3)] lg:flex-[0_0_calc((100%-1.5rem)/3)]">
               {child}
             </div>
           ))}
@@ -57,7 +57,7 @@ export function Carousel({ children, options = {} }: CarouselProps) {
       {prevBtnEnabled && (
         <button
           onClick={scrollPrev}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 md:-translate-x-6 w-10 h-10 md:w-12 md:h-12 bg-white shadow-xl rounded-full flex items-center justify-center text-[#a855f7] hover:bg-gradient-to-r hover:from-[#c026d3] hover:to-[#a855f7] hover:text-white transition-all z-10"
+          className="absolute left-2 md:left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white shadow-lg hover:shadow-xl rounded-full flex items-center justify-center text-[#a855f7] hover:bg-gradient-to-r hover:from-[#c026d3] hover:to-[#a855f7] hover:text-white transition-all"
           aria-label="Anterior"
         >
           <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
@@ -67,7 +67,7 @@ export function Carousel({ children, options = {} }: CarouselProps) {
       {nextBtnEnabled && (
         <button
           onClick={scrollNext}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 md:translate-x-6 w-10 h-10 md:w-12 md:h-12 bg-white shadow-xl rounded-full flex items-center justify-center text-[#a855f7] hover:bg-gradient-to-r hover:from-[#c026d3] hover:to-[#a855f7] hover:text-white transition-all z-10"
+          className="absolute right-2 md:right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white shadow-lg hover:shadow-xl rounded-full flex items-center justify-center text-[#a855f7] hover:bg-gradient-to-r hover:from-[#c026d3] hover:to-[#a855f7] hover:text-white transition-all"
           aria-label="Siguiente"
         >
           <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />

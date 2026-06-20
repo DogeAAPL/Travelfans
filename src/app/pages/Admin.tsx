@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import logo from '../../imports/Travelfans_logo.png';
 import { ImageUpload } from '../components/ImageUpload';
+import { ImageResolutionGuide } from '../components/ImageResolutionGuide';
 
 export function Admin() {
   const { logout } = useAuth();
@@ -111,6 +112,9 @@ export function Admin() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Image Resolution Guide */}
+        <ImageResolutionGuide />
+
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
           <div className="flex border-b overflow-x-auto scrollbar-hide">
@@ -277,6 +281,8 @@ export function Admin() {
                         currentImage={dest.image}
                         onImageChange={(url) => updateDestination(dest.id, 'image', url)}
                         label="Imagen del Destino"
+                        recommendedResolution="1200x800px"
+                        recommendedSize="5MB"
                       />
                     </div>
 
@@ -521,6 +527,9 @@ export function Admin() {
                           currentImage={test.image}
                           onImageChange={(url) => updateTestimonial(test.id, 'image', url)}
                           label="Foto de Perfil"
+                          recommendedResolution="150x150px"
+                          recommendedSize="2MB"
+                          maxFileSize={2 * 1024 * 1024}
                         />
                       </div>
                     </div>
@@ -561,12 +570,12 @@ export function Admin() {
                     type="text"
                     value={content.whatsappNumber}
                     onChange={(e) => updateContent({ whatsappNumber: e.target.value })}
-                    placeholder="5491123456789"
+                    placeholder="573156060833"
                     className="flex-1 px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:border-[#a855f7] focus:outline-none text-sm md:text-base"
                   />
                 </div>
                 <p className="text-xs md:text-sm text-gray-500 mt-2">
-                  Formato: código de país + número (ej: 5491123456789)
+                  Formato: código de país + número (ej: 573156060833)
                 </p>
               </div>
 
