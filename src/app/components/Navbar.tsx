@@ -1,119 +1,90 @@
 import { Menu, X, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useContent } from '../context/ContentContext';
+import { whatsappLinkProps } from '../content/whatsapp';
+import { scrollToSection } from './scrollToSection';
 import logo from '../../imports/Travelfans_logo.png';
 
 export function Navbar() {
+  const { t } = useTranslation();
   const { content } = useContent();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const offset = 80; // Offset para el navbar
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
+  const links = [
+    { id: 'inicio', label: t('nav.home') },
+    { id: 'destinos', label: t('nav.destinations') },
+    { id: 'paquetes', label: t('nav.packages') },
+    { id: 'testimonios', label: t('nav.opinions') },
+  ];
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
+  const goTo = (id: string) => {
+    scrollToSection(id);
     setIsMenuOpen(false);
   };
 
+  const quoteLink = whatsappLinkProps(content.whatsappNumber, t('nav.quoteMessage'), 'navbar');
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+    <nav aria-label={t('nav.main')} className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <img
-              src={logo}
-              alt="TravelFans"
-              className="h-12 md:h-14 w-auto"
-            />
-          </div>
+          <button type="button" onClick={() => goTo('inicio')} className="flex items-center" aria-label={t('nav.home')}>
+            <img src={logo} alt="TravelFans" width={140} height={56} className="h-12 md:h-14 w-auto" />
+          </button>
 
           <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => scrollToSection('inicio')}
-              className="text-gray-700 hover:text-[#c026d3] transition-colors"
-            >
-              Inicio
-            </button>
-            <button
-              onClick={() => scrollToSection('destinos')}
-              className="text-gray-700 hover:text-[#c026d3] transition-colors"
-            >
-              Destinos
-            </button>
-            <button
-              onClick={() => scrollToSection('paquetes')}
-              className="text-gray-700 hover:text-[#c026d3] transition-colors"
-            >
-              Paquetes
-            </button>
-            <button
-              onClick={() => scrollToSection('testimonios')}
-              className="text-gray-700 hover:text-[#c026d3] transition-colors"
-            >
-              Opiniones
-            </button>
+            {links.map(link => (
+              <button
+                key={link.id}
+                type="button"
+                onClick={() => goTo(link.id)}
+                className="text-gray-700 hover:text-[#c026d3] transition-colors"
+              >
+                {link.label}
+              </button>
+            ))}
             <a
-              href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20viaje`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-2 rounded-full hover:shadow-lg transition-all flex items-center gap-2"
+              {...quoteLink}
+              className="bg-gradient-to-r from-[#c026d3] to-[#9333ea] text-white px-6 py-2 rounded-full hover:shadow-lg transition-all flex items-center gap-2"
             >
-              <MessageCircle className="w-4 h-4" />
-              Cotizar
+              <MessageCircle className="w-4 h-4" aria-hidden="true" />
+              {t('nav.quote')}
             </a>
           </div>
 
           <button
-            className="md:hidden text-gray-700"
+            type="button"
+            className="md:hidden text-gray-700 p-2 -mr-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
           </button>
         </div>
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
+        <div id="mobile-menu" className="md:hidden bg-white border-t border-gray-200">
           <div className="px-4 py-4 space-y-3">
-            <button
-              onClick={() => scrollToSection('inicio')}
-              className="block w-full text-left text-gray-700 hover:text-[#c026d3] py-2"
-            >
-              Inicio
-            </button>
-            <button
-              onClick={() => scrollToSection('destinos')}
-              className="block w-full text-left text-gray-700 hover:text-[#c026d3] py-2"
-            >
-              Destinos
-            </button>
-            <button
-              onClick={() => scrollToSection('paquetes')}
-              className="block w-full text-left text-gray-700 hover:text-[#c026d3] py-2"
-            >
-              Paquetes
-            </button>
-            <button
-              onClick={() => scrollToSection('testimonios')}
-              className="block w-full text-left text-gray-700 hover:text-[#c026d3] py-2"
-            >
-              Opiniones
-            </button>
+            {links.map(link => (
+              <button
+                key={link.id}
+                type="button"
+                onClick={() => goTo(link.id)}
+                className="block w-full text-left text-gray-700 hover:text-[#c026d3] py-2"
+              >
+                {link.label}
+              </button>
+            ))}
             <a
-              href={`https://wa.me/${content.whatsappNumber}?text=Hola!%20Quiero%20cotizar%20un%20viaje`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white px-6 py-2 rounded-full text-center"
+              {...quoteLink}
+              className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#c026d3] to-[#9333ea] text-white px-6 py-2 rounded-full text-center"
             >
-              <MessageCircle className="w-4 h-4" />
-              Cotizar
+              <MessageCircle className="w-4 h-4" aria-hidden="true" />
+              {t('nav.quote')}
             </a>
           </div>
         </div>

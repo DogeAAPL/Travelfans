@@ -6,18 +6,22 @@ import { Testimonials } from '../components/Testimonials';
 import { Footer } from '../components/Footer';
 import { WhatsAppFloat } from '../components/WhatsAppFloat';
 import { SideNav } from '../components/SideNav';
+import { CookieBanner } from '../components/CookieBanner';
 
 export function Home() {
   return (
-    <div className="min-h-screen scroll-smooth">
+    <div className="min-h-screen">
       <Navbar />
       <SideNav />
-      <Hero />
-      <Destinations />
-      <Packages />
-      <Testimonials />
+      <main>
+        <Hero />
+        <Destinations />
+        <Packages />
+        <Testimonials />
+      </main>
       <Footer />
       <WhatsAppFloat />
+      <CookieBanner />
     </div>
   );
 }

@@ -1,74 +1,85 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Lock, User, AlertCircle } from 'lucide-react';
 import logo from '../../imports/Travelfans_logo.png';
 
 export function Login() {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  if (isAuthenticated) return <Navigate to="/admin" replace />;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (login(username, password)) {
-      navigate('/admin');
-    } else {
-      setError('Usuario o contraseña incorrectos');
+    setSubmitting(true);
+    try {
+      const result = await login(username, password);
+      if (result.ok) {
+        navigate('/admin');
+        return;
+      }
+      setPassword('');
+      if (result.reason === 'locked') setError(t('login.locked', { seconds: result.retryInSeconds }));
+      else if (result.reason === 'unsupported') setError(t('login.unsupported'));
+      else setError(t('login.error'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#c026d3] to-[#a855f7] flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-to-br from-[#c026d3] to-[#9333ea] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
-            <img
-              src={logo}
-              alt="TravelFans"
-              className="h-16 w-auto mx-auto mb-6"
-            />
-            <h1 className="text-3xl mb-2">Panel de Administración</h1>
-            <p className="text-gray-600">Ingresa tus credenciales para continuar</p>
+            <img src={logo} alt="TravelFans" width={160} height={64} className="h-16 w-auto mx-auto mb-6" />
+            <h1 className="text-3xl mb-2">{t('login.title')}</h1>
+            <p className="text-gray-600">{t('login.subtitle')}</p>
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+            <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" aria-hidden="true" />
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-gray-700 mb-2">Usuario</label>
+              <label htmlFor="login-username" className="block text-gray-700 mb-2">{t('login.username')}</label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#a855f7]" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9333ea]" aria-hidden="true" />
                 <input
+                  id="login-username"
                   type="text"
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#a855f7] focus:outline-none"
-                  placeholder="admin"
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#9333ea] focus:outline-none"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Contraseña</label>
+              <label htmlFor="login-password" className="block text-gray-700 mb-2">{t('login.password')}</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#a855f7]" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9333ea]" aria-hidden="true" />
                 <input
+                  id="login-password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#a855f7] focus:outline-none"
-                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#9333ea] focus:outline-none"
                   required
                 />
               </div>
@@ -76,28 +87,20 @@ export function Login() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#c026d3] to-[#a855f7] text-white py-4 rounded-lg font-semibold hover:shadow-xl transition-all"
+              disabled={submitting}
+              className="w-full bg-gradient-to-r from-[#c026d3] to-[#9333ea] text-white py-4 rounded-lg font-semibold hover:shadow-xl transition-all disabled:opacity-60"
             >
-              Iniciar Sesión
+              {submitting ? t('login.signingIn') : t('login.signIn')}
             </button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Credenciales por defecto:</p>
-            <p className="mt-1">Usuario: <span className="font-mono bg-gray-100 px-2 py-1 rounded">admin</span></p>
-            <p>Contraseña: <span className="font-mono bg-gray-100 px-2 py-1 rounded">travelfans2024</span></p>
-          </div>
         </div>
 
         <div className="text-center mt-6">
-          <a
-            href="/"
-            className="text-white hover:text-purple-100 transition-colors"
-          >
-            ← Volver al inicio
-          </a>
+          <Link to="/" className="text-white hover:text-purple-100 transition-colors">
+            {t('login.back')}
+          </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

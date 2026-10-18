@@ -1,182 +1,85 @@
 /**
- * Analytics Service
- * Handles tracking user interactions and page views
+ * Google Analytics con consentimiento previo.
+ *
+ * El script de Google solo se carga si:
+ *  1. Existe VITE_GA_ID en el .env (si no, el sitio funciona sin analítica), y
+ *  2. El visitante aceptó las cookies en el banner.
  */
 
-interface AnalyticsEvent {
-  category: string;
-  action: string;
-  label?: string;
-  value?: number;
-  timestamp: number;
-}
+export type ConsentState = 'granted' | 'denied' | 'unset';
 
-export class AnalyticsService {
-  private static events: AnalyticsEvent[] = [];
-  private static GA_ID = import.meta.env.VITE_GA_ID || 'G-XXXXXXXXXX';
+const CONSENT_KEY = 'travelfans_cookie_consent';
+const GA_ID = import.meta.env.VITE_GA_ID?.trim() || '';
 
-  /**
-   * Initialize Google Analytics
-   */
-  static init(gaId: string = this.GA_ID): void {
-    // Load Google Analytics script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-    document.head.appendChild(script);
+export const analyticsEnabled = /^G-[A-Z0-9]+$/.test(GA_ID);
 
-    // Initialize gtag
-    window.dataLayer = window.dataLayer || [];
-    function gtag(...args: any[]) {
-      window.dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-    gtag('config', gaId);
+let loaded = false;
 
-    // Store GA ID
-    this.GA_ID = gaId;
-  }
-
-  /**
-   * Track page view
-   */
-  static pageView(path: string, title?: string): void {
-    const event: AnalyticsEvent = {
-      category: 'pageView',
-      action: path,
-      label: title,
-      timestamp: Date.now()
-    };
-    this.logEvent(event);
-
-    // Send to Google Analytics
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'page_view', {
-        page_path: path,
-        page_title: title
-      });
-    }
-  }
-
-  /**
-   * Track custom event
-   */
-  static trackEvent(
-    category: string,
-    action: string,
-    label?: string,
-    value?: number
-  ): void {
-    const event: AnalyticsEvent = {
-      category,
-      action,
-      label,
-      value,
-      timestamp: Date.now()
-    };
-    this.logEvent(event);
-
-    // Send to Google Analytics
-    if (typeof gtag !== 'undefined') {
-      gtag('event', action, {
-        event_category: category,
-        event_label: label,
-        value: value
-      });
-    }
-  }
-
-  /**
-   * Track WhatsApp click
-   */
-  static trackWhatsAppClick(destination?: string): void {
-    this.trackEvent('engagement', 'whatsapp_click', destination || 'general');
-  }
-
-  /**
-   * Track search
-   */
-  static trackSearch(query: string): void {
-    this.trackEvent('search', 'search_executed', query);
-  }
-
-  /**
-   * Track destination view
-   */
-  static trackDestinationView(destination: string): void {
-    this.trackEvent('engagement', 'destination_viewed', destination);
-  }
-
-  /**
-   * Track carousel interaction
-   */
-  static trackCarouselInteraction(carouselName: string, action: string): void {
-    this.trackEvent('carousel', action, carouselName);
-  }
-
-  /**
-   * Track login
-   */
-  static trackLogin(method: string = 'email'): void {
-    this.trackEvent('auth', 'login', method);
-  }
-
-  /**
-   * Track logout
-   */
-  static trackLogout(): void {
-    this.trackEvent('auth', 'logout');
-  }
-
-  /**
-   * Get all tracked events
-   */
-  static getEvents(): AnalyticsEvent[] {
-    return this.events;
-  }
-
-  /**
-   * Clear events log
-   */
-  static clearEvents(): void {
-    this.events = [];
-  }
-
-  /**
-   * Log event locally
-   */
-  private static logEvent(event: AnalyticsEvent): void {
-    this.events.push(event);
-    // In production, send to backend
-    console.log('[Analytics]', event);
-  }
-
-  /**
-   * Get analytics summary
-   */
-  static getSummary(): {
-    totalEvents: number;
-    eventsByCategory: Record<string, number>;
-    lastEvent?: AnalyticsEvent;
-  } {
-    const eventsByCategory: Record<string, number> = {};
-    
-    this.events.forEach(event => {
-      eventsByCategory[event.category] = (eventsByCategory[event.category] || 0) + 1;
-    });
-
-    return {
-      totalEvents: this.events.length,
-      eventsByCategory,
-      lastEvent: this.events[this.events.length - 1]
-    };
-  }
-}
-
-// Declare gtag globally
 declare global {
-  function gtag(...args: any[]): void;
   interface Window {
-    dataLayer: any[];
+    dataLayer: unknown[];
+    gtag?: (...args: unknown[]) => void;
   }
+}
+
+export function getConsent(): ConsentState {
+  try {
+    const value = localStorage.getItem(CONSENT_KEY);
+    return value === 'granted' || value === 'denied' ? value : 'unset';
+  } catch {
+    return 'unset';
+  }
+}
+
+export function setConsent(state: Exclude<ConsentState, 'unset'>) {
+  try {
+    localStorage.setItem(CONSENT_KEY, state);
+  } catch {
+    // Sin storage se volverá a preguntar en la próxima visita.
+  }
+  if (state === 'granted') {
+    loadAnalytics();
+  } else if (window.gtag) {
+    window.gtag('consent', 'update', { analytics_storage: 'denied' });
+  }
+}
+
+export function resetConsent() {
+  try {
+    localStorage.removeItem(CONSENT_KEY);
+  } catch {
+    // Nada que limpiar.
+  }
+}
+
+function loadAnalytics() {
+  if (!analyticsEnabled || loaded) return;
+  loaded = true;
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag() {
+    // gtag espera el objeto `arguments`, no un array.
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments);
+  };
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID, { anonymize_ip: true });
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_ID)}`;
+  document.head.appendChild(script);
+}
+
+/** Llamar una vez al iniciar la app: carga GA solo si ya había consentimiento guardado. */
+export function initAnalytics() {
+  if (getConsent() === 'granted') loadAnalytics();
+}
+
+function trackEvent(action: string, params: Record<string, unknown>) {
+  if (loaded && window.gtag) window.gtag('event', action, params);
+}
+
+export function trackWhatsAppClick(source: string) {
+  trackEvent('whatsapp_click', { event_category: 'engagement', event_label: source });
 }

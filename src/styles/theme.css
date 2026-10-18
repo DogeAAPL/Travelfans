@@ -10,7 +10,7 @@
   --popover-foreground: #1a1a2e;
   --primary: #c026d3;
   --primary-foreground: #ffffff;
-  --secondary: #a855f7;
+  --secondary: #9333ea;
   --secondary-foreground: #ffffff;
   --muted: #f3e8ff;
   --muted-foreground: #71717a;
@@ -24,9 +24,9 @@
   --switch-background: #d8b4fe;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #a855f7;
+  --ring: #9333ea;
   --chart-1: #c026d3;
-  --chart-2: #a855f7;
+  --chart-2: #9333ea;
   --chart-3: #e879f9;
   --chart-4: #d946ef;
   --chart-5: #f0abfc;
@@ -38,7 +38,7 @@
   --sidebar-accent: #f3e8ff;
   --sidebar-accent-foreground: #1a1a2e;
   --sidebar-border: rgba(168, 85, 247, 0.2);
-  --sidebar-ring: #a855f7;
+  --sidebar-ring: #9333ea;
 }
 
 .dark {
@@ -180,15 +180,33 @@
   }
 }
 
-/* Smooth scroll para toda la página */
-html {
-  scroll-behavior: smooth;
-}
-
+/* Smooth scroll solo si el usuario no pidió reducir animaciones */
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Los enlaces #seccion no quedan tapados por el navbar fijo */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* Foco visible al navegar con teclado */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #9333ea;
+  outline-offset: 2px;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

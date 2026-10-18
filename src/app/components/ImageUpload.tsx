@@ -1,130 +1,144 @@
-import { Upload, X, Info } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { Upload, X, Info, AlertCircle } from 'lucide-react';
+import { useState, useRef, useId } from 'react';
+import { compressImage } from '../content/compressImage';
+import { isSafeImageUrl } from '../content/validation';
 
 interface ImageUploadProps {
   currentImage: string;
   onImageChange: (imageUrl: string) => void;
   label?: string;
   recommendedResolution?: string;
-  recommendedSize?: string;
-  maxFileSize?: number;
+  /** Lado mayor (px) al que se reduce la imagen subida. */
+  maxDimension?: number;
 }
 
-export function ImageUpload({ 
-  currentImage, 
-  onImageChange, 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+export function ImageUpload({
+  currentImage,
+  onImageChange,
   label = 'Imagen',
   recommendedResolution = '1280x720',
-  recommendedSize = '5MB',
-  maxFileSize = 5 * 1024 * 1024
+  maxDimension = 1200,
 }: ImageUploadProps) {
-  const [preview, setPreview] = useState<string>(currentImage);
+  const id = useId();
+  const [urlDraft, setUrlDraft] = useState(currentImage.startsWith('data:') ? '' : currentImage);
+  const [error, setError] = useState('');
+  const [processing, setProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
+    setError('');
 
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona una imagen válida');
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setError('Formato no soportado. Usa JPG, PNG o WebP.');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setError('La imagen no debe superar 10 MB.');
       return;
     }
 
-    // Validar tamaño
-    if (file.size > maxFileSize) {
-      alert(`La imagen no debe superar ${recommendedSize}`);
-      return;
+    setProcessing(true);
+    try {
+      const dataUrl = await compressImage(file, maxDimension);
+      setUrlDraft('');
+      onImageChange(dataUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo procesar la imagen.');
+    } finally {
+      setProcessing(false);
     }
-
-    // Convertir a base64
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setPreview(result);
-      onImageChange(result);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleRemove = () => {
-    setPreview('');
+    setUrlDraft('');
+    setError('');
     onImageChange('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   const handleUrlChange = (url: string) => {
-    setPreview(url);
-    onImageChange(url);
+    setUrlDraft(url);
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setError('');
+      onImageChange('');
+    } else if (isSafeImageUrl(trimmed)) {
+      setError('');
+      onImageChange(trimmed);
+    } else {
+      setError('La URL debe empezar con https://');
+    }
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="block text-gray-700 text-xs md:text-sm font-medium">{label}</label>
-        <div className="flex items-center gap-1 text-xs text-gray-500 bg-blue-50 px-2 py-1 rounded">
-          <Info className="w-3 h-3" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="block text-gray-700 text-xs md:text-sm font-medium">{label}</span>
+        <div className="flex items-center gap-1 text-xs text-gray-600 bg-blue-50 px-2 py-1 rounded">
+          <Info className="w-3 h-3" aria-hidden="true" />
           <span>Resolución recomendada: {recommendedResolution}</span>
         </div>
       </div>
 
-      {/* Preview */}
-      {preview && (
-        <div className="relative w-full rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center" style={{ minHeight: '10rem' }}>
-          <img
-            src={preview}
-            alt="Preview"
-            className="max-w-full max-h-48 object-contain"
-          />
+      {currentImage && (
+        <div className="relative w-full rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center min-h-40">
+          <img src={currentImage} alt={`Vista previa: ${label}`} className="max-w-full max-h-48 object-contain" />
           <button
             onClick={handleRemove}
             className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
             type="button"
+            aria-label={`Quitar ${label}`}
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       )}
 
-      {/* Upload button */}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border-2 border-[#a855f7] text-[#a855f7] rounded-lg hover:bg-purple-50 transition-colors text-sm"
-        >
-          <Upload className="w-4 h-4" />
-          Subir desde dispositivo
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-      </div>
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={processing}
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-[#9333ea] text-[#9333ea] rounded-lg hover:bg-purple-50 transition-colors text-sm disabled:opacity-60"
+      >
+        <Upload className="w-4 h-4" aria-hidden="true" />
+        {processing ? 'Procesando…' : 'Subir desde dispositivo'}
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_TYPES.join(',')}
+        onChange={handleFileChange}
+        className="hidden"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
 
-      {/* URL input */}
       <div>
-        <label className="block text-gray-600 text-xs mb-1">O ingresa una URL:</label>
+        <label htmlFor={`${id}-url`} className="block text-gray-600 text-xs mb-1">O ingresa una URL:</label>
         <input
-          type="text"
-          value={preview}
+          id={`${id}-url`}
+          type="url"
+          inputMode="url"
+          value={urlDraft}
           onChange={(e) => handleUrlChange(e.target.value)}
-          placeholder="https://ejemplo.com/imagen.jpg"
-          className="w-full px-3 md:px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#a855f7] focus:outline-none text-sm md:text-base"
+          placeholder={currentImage.startsWith('data:') ? 'Imagen subida desde el dispositivo' : 'https://ejemplo.com/imagen.jpg'}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className="w-full px-3 md:px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#9333ea] focus:outline-none text-sm md:text-base"
         />
       </div>
 
-      {/* Info hint */}
-      <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-        <p className="text-xs text-gray-600">
-          <strong>📋 Recomendaciones:</strong> Formato PNG o JPG, máximo {recommendedSize}, resolución mínima {recommendedResolution}
+      {error && (
+        <p id={`${id}-error`} role="alert" className="flex items-center gap-2 text-sm text-red-600">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          {error}
         </p>
-      </div>
+      )}
     </div>
   );
 }

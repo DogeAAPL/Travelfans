@@ -1,40 +1,39 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import * as authService from '../../services/authService';
+import type { LoginResult, Session } from '../../services/authService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
+  session: Session | null;
+  login: (username: string, password: string) => Promise<LoginResult>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState<Session | null>(() => authService.getSession());
 
+  // Cierra la sesión automáticamente cuando expira.
   useEffect(() => {
-    const auth = localStorage.getItem('travelfans_auth');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
+    if (!session) return;
+    const timeout = window.setTimeout(() => setSession(authService.getSession()), session.expiresAt - Date.now());
+    return () => window.clearTimeout(timeout);
+  }, [session]);
 
-  const login = (username: string, password: string) => {
-    // Credenciales por defecto - en producción esto debería ser más seguro
-    if (username === 'admin' && password === 'travelfans2024') {
-      setIsAuthenticated(true);
-      localStorage.setItem('travelfans_auth', 'true');
-      return true;
-    }
-    return false;
+  const login = async (username: string, password: string) => {
+    const result = await authService.login(username, password);
+    if (result.ok) setSession(result.session);
+    return result;
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('travelfans_auth');
+    authService.logout();
+    setSession(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: session !== null, session, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
