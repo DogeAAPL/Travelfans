@@ -20,7 +20,7 @@ import logo from '../../imports/Travelfans_logo.png';
 import { ImageUpload } from '../components/ImageUpload';
 import { ImageResolutionGuide } from '../components/ImageResolutionGuide';
 import { MAX_ITEMS, isValidWhatsapp, nextId, splitList, validateContent } from '../content/validation';
-import { StorageFullError } from '../../services/contentService';
+import { NotAuthorizedError, StorageFullError } from '../../services/contentService';
 import { usingDefaultCredentials } from '../../services/authService';
 
 const inputClass =
@@ -75,7 +75,7 @@ function numberFrom(value: string, min: number, max: number): number {
 
 export function Admin() {
   const { logout } = useAuth();
-  const { content, saveContent } = useContent();
+  const { content, saveContent, sharedContent } = useContent();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('hero');
   const [draft, setDraft] = useState<ContentData>(content);
@@ -114,9 +114,9 @@ export function Admin() {
     return true;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (dirty && !window.confirm('Tienes cambios sin guardar. ¿Cerrar sesión de todas formas?')) return;
-    logout();
+    await logout();
     navigate('/login');
   };
 
@@ -128,12 +128,19 @@ export function Admin() {
     }
     setSaving(true);
     try {
-      await saveContent(draft);
-      setStatus({ type: 'saved', messages: ['Cambios guardados.'] });
+      const saved = await saveContent(draft);
+      // Las imágenes subidas vuelven como URLs de Storage: el borrador pasa a ser lo guardado.
+      setDraft(saved);
+      setDraftVersion(v => v + 1);
+      setStatus({
+        type: 'saved',
+        messages: [sharedContent ? 'Cambios publicados en el sitio.' : 'Cambios guardados en este navegador.'],
+      });
     } catch (error) {
+      const known = error instanceof StorageFullError || error instanceof NotAuthorizedError;
       setStatus({
         type: 'error',
-        messages: [error instanceof StorageFullError ? error.message : 'No se pudieron guardar los cambios. Intenta de nuevo.'],
+        messages: [known ? (error as Error).message : 'No se pudieron guardar los cambios. Revisa tu conexión e intenta de nuevo.'],
       });
     } finally {
       setSaving(false);
@@ -224,10 +231,14 @@ export function Admin() {
           </div>
         )}
 
-        <div role="note" className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-          Por ahora los cambios se guardan solo en este navegador: los visitantes siguen viendo el contenido original
-          hasta que el sitio tenga un servidor (backend).
-        </div>
+        {!sharedContent && (
+          <div role="note" className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+            Modo local: Supabase no está configurado, así que los cambios se guardan solo en este navegador.
+            Configura <code className="bg-blue-100 px-1 rounded">VITE_SUPABASE_URL</code> y{' '}
+            <code className="bg-blue-100 px-1 rounded">VITE_SUPABASE_PUBLISHABLE_KEY</code> en el{' '}
+            <code className="bg-blue-100 px-1 rounded">.env</code> para publicarlos.
+          </div>
+        )}
 
         <ImageResolutionGuide />
 

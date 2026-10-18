@@ -6,7 +6,10 @@ export type { ContentData, Destination, Package, Testimonial } from '../content/
 
 interface ContentContextType {
   content: ContentData;
-  saveContent: (content: ContentData) => Promise<void>;
+  /** Guarda y devuelve el contenido tal como quedó (con imágenes ya subidas, si aplica). */
+  saveContent: (content: ContentData) => Promise<ContentData>;
+  /** true si lo guardado lo ven todos los visitantes (hay backend). */
+  sharedContent: boolean;
 }
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
@@ -16,21 +19,25 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    contentRepository.load().then(loaded => {
-      if (!cancelled) setContent(loaded);
-    });
+    contentRepository
+      .load()
+      .then(loaded => {
+        if (!cancelled) setContent(loaded);
+      })
+      .catch(error => console.error('No se pudo cargar el contenido:', error));
     return () => {
       cancelled = true;
     };
   }, []);
 
   const saveContent = useCallback(async (next: ContentData) => {
-    await contentRepository.save(next);
-    setContent(next);
+    const saved = await contentRepository.save(next);
+    setContent(saved);
+    return saved;
   }, []);
 
   return (
-    <ContentContext.Provider value={{ content, saveContent }}>
+    <ContentContext.Provider value={{ content, saveContent, sharedContent: contentRepository.shared }}>
       {children}
     </ContentContext.Provider>
   );

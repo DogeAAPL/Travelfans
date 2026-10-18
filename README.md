@@ -19,9 +19,36 @@ Copia `.env.example` como `.env` y completa los valores:
 
 | Variable | Para qué sirve |
 | --- | --- |
-| `VITE_ADMIN_USER` | Usuario del panel (por defecto `admin`). |
-| `VITE_ADMIN_PASSWORD_HASH` | Hash de la contraseña del panel. Se genera con `npm run hash-password -- "tu-contraseña"`. Si falta, se usa la contraseña de ejemplo `travelfans2024` y el panel muestra un aviso. |
+| `VITE_SUPABASE_URL` | URL del proyecto de Supabase (backend). |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clave pública (`sb_publishable_...`) del proyecto. Nunca uses la clave secreta/service_role. |
 | `VITE_GA_ID` | ID de Google Analytics 4. Si falta, no se carga Analytics ni el aviso de cookies. |
+| `VITE_ADMIN_USER`, `VITE_ADMIN_PASSWORD_HASH` | Solo para el **modo local** (sin Supabase). El hash se genera con `npm run hash-password -- "tu-contraseña"`. |
+
+Si las variables de Supabase faltan, el sitio funciona igual en **modo local**: el contenido se guarda en el navegador y el login usa la contraseña local. Sirve para desarrollar sin conexión, pero no publica cambios.
+
+Al publicar el sitio (Vercel, Netlify, etc.) configura las mismas variables en el panel del hosting.
+
+## Backend (Supabase)
+
+Proyecto `travelfans` (región São Paulo). El esquema está versionado en `supabase/migrations/`:
+
+- **`public.site_content`**: una sola fila con todo el contenido del sitio en JSON. Lectura pública; solo administradores pueden escribir (RLS).
+- **`private.admins`**: correos autorizados como administradores (esquema no expuesto por la API).
+- **Bucket `site-images`**: imágenes que se suben desde el panel. Lectura pública por URL; solo administradores suben o borran (máx. 2 MB, WebP/JPEG/PNG).
+
+### Crear la cuenta de administrador
+
+1. En el dashboard de Supabase: **Authentication > Users > Add user > Create new user**, con el correo autorizado (`angelwtf36@gmail.com`) y una contraseña segura. Marca "Auto Confirm User".
+2. Recomendado: **Authentication > Sign In / Providers > Email** y desactiva "Allow new users to sign up", para que nadie más pueda registrarse.
+3. Inicia sesión en `/login` con ese correo.
+
+### Agregar otro administrador
+
+Crea su usuario como en el paso 1 y agrega su correo en el SQL Editor:
+
+```sql
+insert into private.admins (email) values ('correo@ejemplo.com');
+```
 
 ## Estructura
 
@@ -33,17 +60,17 @@ src/
     context/      AuthContext (sesión) y ContentContext (contenido del sitio)
     content/      Contenido por defecto, validación, compresión de imágenes, enlaces de WhatsApp
   services/
-    authService.ts      Login del panel
-    contentService.ts   Lectura/escritura del contenido
+    supabaseClient.ts   Cliente de Supabase (null si no hay .env)
+    authService.ts      Login del panel (Supabase Auth o modo local)
+    localAuth.ts        Login de respaldo sin backend
+    contentService.ts   Lectura/escritura del contenido (Supabase o localStorage)
     AnalyticsService.ts Google Analytics con consentimiento
     i18nConfig.ts       Textos en es/en/pt
 ```
 
-## Limitaciones conocidas (falta un backend)
+## Limitaciones conocidas
 
-El sitio todavía no tiene servidor, así que:
-
-- **El contenido editado en el panel se guarda solo en el navegador de quien lo edita.** Los visitantes ven el contenido por defecto de `src/app/content/defaultContent.ts`. Para publicar cambios, reemplaza `localRepository` en `src/services/contentService.ts` por uno que llame a un backend (Supabase, Spring Boot, etc.); el resto de la app no necesita cambios.
-- **El login no es seguridad real.** La contraseña se guarda como hash PBKDF2 (no se puede leer del código), la sesión expira a las 8 horas y se bloquean 60 segundos tras 5 intentos fallidos, pero todo corre en el navegador. Reemplaza `authService.ts` por un proveedor con servidor antes de manejar datos sensibles.
 - Los textos que edita el administrador (destinos, paquetes, opiniones) se muestran tal como se escribieron, sin traducir. Los textos del hero se traducen mientras no se modifiquen.
+- Las imágenes reemplazadas o borradas en el panel quedan en el bucket `site-images`; se pueden limpiar a mano desde **Storage** en el dashboard.
+- En el plan gratis, Supabase pausa el proyecto tras una semana sin actividad. Mientras está pausado el sitio muestra el contenido por defecto; se reactiva desde el dashboard.
 - Para la vista previa al compartir el enlace, agrega `og:url` y `og:image` (URLs absolutas) en `index.html` cuando el sitio tenga dominio.

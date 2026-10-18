@@ -4,20 +4,37 @@ import type { LoginResult, Session } from '../../services/authService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  /** true mientras se recupera la sesión guardada al abrir la página. */
+  loading: boolean;
   session: Session | null;
   login: (username: string, password: string) => Promise<LoginResult>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(() => authService.getSession());
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Cierra la sesión automáticamente cuando expira.
   useEffect(() => {
-    if (!session) return;
-    const timeout = window.setTimeout(() => setSession(authService.getSession()), session.expiresAt - Date.now());
+    let cancelled = false;
+    authService.restoreSession().then(restored => {
+      if (cancelled) return;
+      setSession(restored);
+      setLoading(false);
+    });
+    const unsubscribe = authService.onSignedOut(() => setSession(null));
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
+  // Sesiones con vencimiento fijo (modo local): cerrar automáticamente al expirar.
+  useEffect(() => {
+    if (!session?.expiresAt) return;
+    const timeout = window.setTimeout(() => setSession(null), session.expiresAt - Date.now());
     return () => window.clearTimeout(timeout);
   }, [session]);
 
@@ -27,13 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
     setSession(null);
+    await authService.logout();
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: session !== null, session, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: session !== null, loading, session, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

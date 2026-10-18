@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { authMode } from '../../services/authService';
 import { Lock, User, AlertCircle } from 'lucide-react';
 import logo from '../../imports/Travelfans_logo.png';
 
@@ -16,6 +17,8 @@ export function Login() {
 
   if (isAuthenticated) return <Navigate to="/admin" replace />;
 
+  const useEmail = authMode === 'supabase';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -28,8 +31,8 @@ export function Login() {
       }
       setPassword('');
       if (result.reason === 'locked') setError(t('login.locked', { seconds: result.retryInSeconds }));
-      else if (result.reason === 'unsupported') setError(t('login.unsupported'));
-      else setError(t('login.error'));
+      else if (result.reason === 'invalid') setError(t('login.error'));
+      else setError(t(`login.${result.reason}`));
     } finally {
       setSubmitting(false);
     }
@@ -54,13 +57,15 @@ export function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="login-username" className="block text-gray-700 mb-2">{t('login.username')}</label>
+              <label htmlFor="login-username" className="block text-gray-700 mb-2">
+                {useEmail ? t('login.email') : t('login.username')}
+              </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9333ea]" aria-hidden="true" />
                 <input
                   id="login-username"
-                  type="text"
-                  autoComplete="username"
+                  type={useEmail ? 'email' : 'text'}
+                  autoComplete={useEmail ? 'email' : 'username'}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#9333ea] focus:outline-none"
