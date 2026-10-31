@@ -2,7 +2,13 @@ import { useTranslation } from 'react-i18next';
 import { useContent } from '../context/ContentContext';
 import { defaultContent } from './defaultContent';
 
-const STAT_KEYS = ['countries', 'travelers', 'personalized', 'whatsapp'] as const;
+// Etiquetas originales (en español) que se traducen mientras el administrador no las cambie.
+const STAT_KEYS: Record<string, string> = {
+  'Países Destacados': 'countries',
+  'Viajeros Felices': 'travelers',
+  Personalizado: 'personalized',
+  WhatsApp: 'whatsapp',
+};
 
 /**
  * Textos del hero. Si el administrador no los cambió, se muestran traducidos;
@@ -17,13 +23,9 @@ export function useHeroText() {
     title: pick(content.heroTitle, defaultContent.heroTitle, 'hero.title'),
     highlight: pick(content.heroHighlight, defaultContent.heroHighlight, 'hero.highlight'),
     subtitle: pick(content.heroSubtitle, defaultContent.heroSubtitle, 'hero.subtitle'),
-    stats: content.heroStats.map((stat, index) => {
-      const defaultStat = defaultContent.heroStats[index];
-      const key = STAT_KEYS[index];
-      return {
-        value: stat.value,
-        label: defaultStat && key ? pick(stat.label, defaultStat.label, `hero.stats.${key}`) : stat.label,
-      };
+    stats: content.heroStats.map(stat => {
+      const key = STAT_KEYS[stat.label];
+      return { value: stat.value, label: key ? t(`hero.stats.${key}`) : stat.label };
     }),
   };
 }

@@ -39,14 +39,17 @@ export function Destinations() {
                     className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                   />
                 )}
-                <div
-                  className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1"
-                  aria-label={t('destinations.reviews', { rating: destination.rating, count: destination.reviews })}
-                >
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
-                  <span className="font-semibold" aria-hidden="true">{destination.rating}</span>
-                  <span className="text-gray-600 text-sm" aria-hidden="true">({destination.reviews})</span>
-                </div>
+                {/* La valoración solo se muestra si hay reseñas reales cargadas. */}
+                {destination.reviews > 0 && (
+                  <div
+                    className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full flex items-center gap-1"
+                    aria-label={t('destinations.reviews', { rating: destination.rating, count: destination.reviews })}
+                  >
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+                    <span className="font-semibold" aria-hidden="true">{destination.rating}</span>
+                    <span className="text-gray-600 text-sm" aria-hidden="true">({destination.reviews})</span>
+                  </div>
+                )}
               </div>
 
               <div className="p-6 flex flex-col flex-grow">

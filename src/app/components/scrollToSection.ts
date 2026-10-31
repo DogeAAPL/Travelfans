@@ -1,4 +1,4 @@
-export const SECTIONS = ['inicio', 'destinos', 'paquetes', 'testimonios'] as const;
+export const SECTIONS = ['inicio', 'destinos', 'paquetes', 'experiencias', 'testimonios'] as const;
 
 const NAVBAR_OFFSET = 80;
 

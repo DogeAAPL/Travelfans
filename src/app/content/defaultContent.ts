@@ -29,6 +29,14 @@ export interface Testimonial {
   image: string;
 }
 
+export interface Experience {
+  id: number;
+  title: string;
+  text: string;
+  /** Enlace https de YouTube, Vimeo o un archivo .mp4/.webm (ver video.ts). */
+  videoUrl: string;
+}
+
 export interface ContentData {
   heroTitle: string;
   heroHighlight: string;
@@ -37,6 +45,7 @@ export interface ContentData {
   destinations: Destination[];
   packages: Package[];
   testimonials: Testimonial[];
+  experiences: Experience[];
   whatsappNumber: string;
 }
 
@@ -46,7 +55,6 @@ export const defaultContent: ContentData = {
   heroSubtitle: 'Perú, Colombia, Panamá y Brasil te esperan. Cotiza tu viaje por WhatsApp en minutos',
   heroStats: [
     { label: 'Países Destacados', value: '4' },
-    { label: 'Viajeros Felices', value: '5K+' },
     { label: 'Personalizado', value: '100%' },
     { label: 'WhatsApp', value: '24/7' }
   ],
@@ -57,7 +65,7 @@ export const defaultContent: ContentData = {
       location: 'Machu Picchu',
       image: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxNYWNodSUyMFBpY2NodSUyMFBlcnV8ZW58MXx8fHwxNzc4Nzg2MzkyfDA&ixlib=rb-4.1.0&q=80&w=1080',
       rating: 4.9,
-      reviews: 524,
+      reviews: 0,
       highlights: ['Machu Picchu', 'Cusco', 'Lima', 'Valle Sagrado'],
       description: 'Descubre la magia de los Incas'
     },
@@ -67,7 +75,7 @@ export const defaultContent: ContentData = {
       location: 'Cartagena',
       image: 'https://images.unsplash.com/photo-1583531352515-8884af319dc1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxDYXJ0YWdlbmElMjBDb2xvbWJpYSUyMGNvbG9yZnVsfGVufDF8fHx8MTc3ODc4NjM5M3ww&ixlib=rb-4.1.0&q=80&w=1080',
       rating: 4.8,
-      reviews: 467,
+      reviews: 0,
       highlights: ['Cartagena', 'Bogotá', 'Medellín', 'Eje Cafetero'],
       description: 'Color y cultura en el Caribe'
     },
@@ -77,7 +85,7 @@ export const defaultContent: ContentData = {
       location: 'Ciudad de Panamá',
       image: 'https://images.unsplash.com/photo-1598041543955-0d88c390f3b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxQYW5hbWElMjBDaXR5JTIwc2t5bGluZXxlbnwxfHx8fDE3Nzg3ODYzOTN8MA&ixlib=rb-4.1.0&q=80&w=1080',
       rating: 4.7,
-      reviews: 389,
+      reviews: 0,
       highlights: ['Ciudad de Panamá', 'Bocas del Toro', 'San Blas', 'Canal'],
       description: 'Modernidad y playas paradisíacas'
     },
@@ -87,7 +95,7 @@ export const defaultContent: ContentData = {
       location: 'Río de Janeiro',
       image: 'https://images.unsplash.com/photo-1518639192441-8fce0a366e2e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxSaW8lMjBkZSUyMEphbmVpcm8lMjBCcmF6aWwlMjBDaHJpc3R8ZW58MXx8fHwxNzc4Nzg2Mzk0fDA&ixlib=rb-4.1.0&q=80&w=1080',
       rating: 4.9,
-      reviews: 612,
+      reviews: 0,
       highlights: ['Río de Janeiro', 'Salvador', 'Amazonas', 'Iguazú'],
       description: 'Samba, playas y naturaleza exuberante'
     }
@@ -138,6 +146,7 @@ export const defaultContent: ContentData = {
       ]
     }
   ],
+  // Opiniones de EJEMPLO para mostrar el diseño: reemplazarlas por opiniones reales desde el panel.
   testimonials: [
     {
       id: 1,
@@ -164,5 +173,7 @@ export const defaultContent: ContentData = {
       image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400'
     }
   ],
+  // Videos de viajes ya realizados. Vacío = la sección no aparece en la portada.
+  experiences: [],
   whatsappNumber: '573156060833'
 };

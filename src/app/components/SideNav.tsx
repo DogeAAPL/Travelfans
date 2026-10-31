@@ -1,10 +1,12 @@
-import { Home, Flag, Briefcase, Quote } from 'lucide-react';
+import { Home, Flag, Briefcase, Quote, Video } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SECTIONS, scrollToSection } from './scrollToSection';
+import { useContent } from '../context/ContentContext';
 
 export function SideNav() {
   const { t } = useTranslation();
+  const { content } = useContent();
   const [activeSection, setActiveSection] = useState('inicio');
   const [headerVisible, setHeaderVisible] = useState(true);
 
@@ -45,8 +47,13 @@ export function SideNav() {
     { id: 'inicio', icon: Home, label: t('nav.home') },
     { id: 'destinos', icon: Flag, label: t('nav.destinations') },
     { id: 'paquetes', icon: Briefcase, label: t('nav.packages') },
+    { id: 'experiencias', icon: Video, label: t('nav.experiences') },
     { id: 'testimonios', icon: Quote, label: t('nav.opinions') }
-  ];
+  ].filter(item =>
+    item.id === 'experiencias' ? content.experiences.length > 0
+    : item.id === 'testimonios' ? content.testimonials.length > 0
+    : true
+  );
 
   if (headerVisible) return null;
 

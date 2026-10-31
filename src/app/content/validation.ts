@@ -1,4 +1,5 @@
-import { defaultContent, type ContentData, type Destination, type Package, type Testimonial } from './defaultContent';
+import { defaultContent, type ContentData, type Destination, type Experience, type Package, type Testimonial } from './defaultContent';
+import { parseVideoUrl } from './video';
 
 export const MAX_ITEMS = 10;
 
@@ -93,6 +94,12 @@ export function sanitizeContent(raw: unknown): ContentData {
       text: str(x.text, ''),
       image: image(x.image, ''),
     })),
+    experiences: list<Experience>(data.experiences, d.experiences, (x, i) => ({
+      id: num(x.id, i + 1, 1, Number.MAX_SAFE_INTEGER),
+      title: str(x.title, ''),
+      text: str(x.text, ''),
+      videoUrl: str(x.videoUrl, ''),
+    })).filter(exp => parseVideoUrl(exp.videoUrl) !== null),
     whatsappNumber: isValidWhatsapp(whatsapp) ? whatsapp : d.whatsappNumber,
   };
 }
@@ -115,6 +122,12 @@ export function validateContent(content: ContentData): string[] {
   content.testimonials.forEach(test => {
     if (!test.name.trim()) errors.push(`Testimonio #${test.id}: falta el nombre.`);
     if (test.image && !isSafeImageUrl(test.image)) errors.push(`Testimonio #${test.id}: la imagen debe ser una URL https.`);
+  });
+  content.experiences.forEach(exp => {
+    if (!exp.title.trim()) errors.push(`Experiencia #${exp.id}: falta el título.`);
+    if (!parseVideoUrl(exp.videoUrl)) {
+      errors.push(`Experiencia #${exp.id}: el video debe ser un enlace https de YouTube, Vimeo o un archivo .mp4/.webm.`);
+    }
   });
   return errors;
 }

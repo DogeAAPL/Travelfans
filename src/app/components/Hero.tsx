@@ -6,8 +6,9 @@ import { useHeroText } from '../content/useHeroText';
 import { whatsappUrl } from '../content/whatsapp';
 import { trackWhatsAppClick } from '../../services/AnalyticsService';
 
+// Machu Picchu, el destino estrella de la agencia (la misma foto de la tarjeta de Perú).
 const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1602608099803-96718a589bb3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cm9waWNhbCUyMGJlYWNoJTIwc3Vuc2V0JTIwY2FyaWJiZWFufGVufDF8fHx8MTc3ODc4NjU5MHww&ixlib=rb-4.1.0&q=80';
+  'https://images.unsplash.com/photo-1526392060635-9d6019884377?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80';
 
 const TRAVELER_OPTIONS = [1, 2, 3, 4, 5];
 const MAX_TRAVELERS = TRAVELER_OPTIONS[TRAVELER_OPTIONS.length - 1];
@@ -67,7 +68,9 @@ export function Hero() {
           alt=""
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#86198f]/85 to-[#6b21a8]/80" />
+        {/* Velo neutro: deja ver la foto con sus colores y mantiene legible el texto blanco. */}
+        <div className="absolute inset-0 bg-black/45" />
+        <p className="absolute bottom-4 left-4 text-sm text-white/90">Machu Picchu, Perú</p>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
@@ -77,9 +80,7 @@ export function Hero() {
             {hero.highlight && (
               <>
                 <br />
-                <span className="bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
-                  {hero.highlight}
-                </span>
+                {hero.highlight}
               </>
             )}
           </h1>
@@ -89,7 +90,7 @@ export function Hero() {
         <form
           onSubmit={handleSubmit}
           aria-label={t('hero.form.title')}
-          className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-6 md:p-8"
+          className="max-w-4xl mx-auto bg-white rounded-2xl p-6 md:p-8"
           noValidate
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -156,14 +157,14 @@ export function Hero() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#c026d3] to-[#9333ea] text-white py-4 rounded-lg flex items-center justify-center gap-2 hover:shadow-xl transition-all"
+            className="w-full bg-[#9333ea] hover:bg-[#7e22ce] text-white py-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
             <MessageCircle className="w-5 h-5" aria-hidden="true" />
             {t('hero.form.submit')}
           </button>
         </form>
 
-        <dl className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-white text-center">
+        <dl className="mt-16 flex flex-wrap justify-center gap-x-16 gap-y-8 text-white text-center">
           {hero.stats.map((stat, index) => (
             <div key={index} className="flex flex-col-reverse">
               <dt className="text-white/90">{stat.label}</dt>

@@ -2,6 +2,7 @@ import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { Destinations } from '../components/Destinations';
 import { Packages } from '../components/Packages';
+import { Experiences } from '../components/Experiences';
 import { Testimonials } from '../components/Testimonials';
 import { Footer } from '../components/Footer';
 import { WhatsAppFloat } from '../components/WhatsAppFloat';
@@ -17,6 +18,7 @@ export function Home() {
         <Hero />
         <Destinations />
         <Packages />
+        <Experiences />
         <Testimonials />
       </main>
       <Footer />

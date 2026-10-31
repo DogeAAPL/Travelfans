@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useContent, type ContentData, type Destination, type Package, type Testimonial } from '../context/ContentContext';
+import { useContent, type ContentData, type Destination, type Experience, type Package, type Testimonial } from '../context/ContentContext';
 import {
   LogOut,
   Home,
@@ -12,13 +12,15 @@ import {
   Plus,
   Trash2,
   Phone,
+  Video,
   Undo2,
   AlertTriangle,
   CheckCircle2,
 } from 'lucide-react';
 import logo from '../../imports/Travelfans_logo.png';
 import { ImageUpload } from '../components/ImageUpload';
-import { ImageResolutionGuide } from '../components/ImageResolutionGuide';
+import { ExperienceVideo } from '../components/Experiences';
+import { parseVideoUrl } from '../content/video';
 import { MAX_ITEMS, isValidWhatsapp, nextId, splitList, validateContent } from '../content/validation';
 import { NotAuthorizedError, StorageFullError } from '../../services/contentService';
 import { usingDefaultCredentials } from '../../services/authService';
@@ -27,14 +29,15 @@ const inputClass =
   'w-full px-3 md:px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#9333ea] focus:outline-none text-sm md:text-base';
 const labelClass = 'block text-gray-700 mb-2 text-xs md:text-sm';
 const primaryButtonClass =
-  'flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-[#c026d3] to-[#9333ea] text-white rounded-lg hover:shadow-lg transition-all text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed';
+  'flex items-center justify-center gap-2 px-4 py-2 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-lg transition-colors text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed';
 
-type Tab = 'hero' | 'destinations' | 'packages' | 'testimonials' | 'settings';
+type Tab = 'hero' | 'destinations' | 'packages' | 'experiences' | 'testimonials' | 'settings';
 
 const TABS: Array<{ id: Tab; label: string; icon: typeof Home }> = [
   { id: 'hero', label: 'Inicio', icon: Home },
   { id: 'destinations', label: 'Destinos', icon: Flag },
   { id: 'packages', label: 'Paquetes', icon: PackageIcon },
+  { id: 'experiences', label: 'Experiencias', icon: Video },
   { id: 'testimonials', label: 'Testimonios', icon: MessageSquare },
   { id: 'settings', label: 'Configuración', icon: Phone },
 ];
@@ -73,7 +76,31 @@ function numberFrom(value: string, min: number, max: number): number {
   return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : min;
 }
 
+/**
+ * El editor se monta solo con el contenido real ya cargado: si partiera del contenido por
+ * defecto (carga lenta o fallida), al guardar borraría lo publicado.
+ */
 export function Admin() {
+  const { loadStatus } = useContent();
+  if (loadStatus === 'ready') return <AdminPanel />;
+  return (
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4" aria-busy={loadStatus === 'loading'}>
+      {loadStatus === 'error' && (
+        <div role="alert" className="max-w-md bg-white rounded-lg shadow-sm p-6 text-center space-y-4">
+          <AlertTriangle className="w-8 h-8 text-red-600 mx-auto" aria-hidden="true" />
+          <p className="text-gray-700">
+            No se pudo cargar el contenido del sitio. Para no sobrescribirlo, el panel no se abre hasta cargarlo.
+          </p>
+          <button type="button" onClick={() => window.location.reload()} className={`${primaryButtonClass} w-full`}>
+            Reintentar
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
+
+function AdminPanel() {
   const { logout } = useAuth();
   const { content, saveContent, sharedContent } = useContent();
   const navigate = useNavigate();
@@ -85,15 +112,6 @@ export function Admin() {
   const [draftVersion, setDraftVersion] = useState(0);
 
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(content), [draft, content]);
-
-  // El contenido guardado se carga de forma asíncrona: si aún no hay cambios, adoptarlo.
-  useEffect(() => {
-    if (!dirty) {
-      setDraft(content);
-      setDraftVersion(v => v + 1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content]);
 
   // Avisar antes de cerrar la pestaña con cambios sin guardar.
   useEffect(() => {
@@ -154,12 +172,12 @@ export function Admin() {
     setStatus(null);
   };
 
-  const updateItem = <T extends { id: number }>(key: 'destinations' | 'packages' | 'testimonials', id: number, patch: Partial<T>) => {
+  const updateItem = <T extends { id: number }>(key: 'destinations' | 'packages' | 'experiences' | 'testimonials', id: number, patch: Partial<T>) => {
     const items = draft[key] as unknown as T[];
     update({ [key]: items.map(item => (item.id === id ? { ...item, ...patch } : item)) } as Partial<ContentData>);
   };
 
-  const removeItem = (key: 'destinations' | 'packages' | 'testimonials', id: number, name: string) => {
+  const removeItem = (key: 'destinations' | 'packages' | 'experiences' | 'testimonials', id: number, name: string) => {
     if (!window.confirm(`¿Eliminar "${name || `#${id}`}"? El cambio se aplica al guardar.`)) return;
     update({ [key]: (draft[key] as Array<{ id: number }>).filter(item => item.id !== id) } as Partial<ContentData>);
   };
@@ -167,6 +185,7 @@ export function Admin() {
   const updateDestination = (id: number, patch: Partial<Destination>) => updateItem<Destination>('destinations', id, patch);
   const updatePackage = (id: number, patch: Partial<Package>) => updateItem<Package>('packages', id, patch);
   const updateTestimonial = (id: number, patch: Partial<Testimonial>) => updateItem<Testimonial>('testimonials', id, patch);
+  const updateExperience = (id: number, patch: Partial<Experience>) => updateItem<Experience>('experiences', id, patch);
 
   const addButton = (count: number, label: string, onAdd: () => void) =>
     count < MAX_ITEMS ? (
@@ -192,7 +211,7 @@ export function Admin() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 md:gap-4">
               <img src={logo} alt="TravelFans" className="h-8 md:h-10 w-auto" />
-              <h1 className="text-lg md:text-2xl bg-gradient-to-r from-[#c026d3] to-[#9333ea] bg-clip-text text-transparent">
+              <h1 className="text-lg md:text-2xl text-[#7e22ce]">
                 <span className="hidden sm:inline">Panel de Administración</span>
                 <span className="sm:hidden">Admin</span>
               </h1>
@@ -240,9 +259,8 @@ export function Admin() {
           </div>
         )}
 
-        <ImageResolutionGuide />
-
-        <div className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
+        {/* Las pestañas quedan fijas bajo el encabezado (56px en móvil, 72px desde md) al bajar por la lista. */}
+        <div className="sticky top-14 md:top-[72px] z-40 bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
           <div role="tablist" aria-label="Secciones del sitio" className="flex border-b overflow-x-auto scrollbar-hide">
             {TABS.map(tab => {
               const Icon = tab.icon;
@@ -359,6 +377,17 @@ export function Admin() {
                     {deleteButton(() => removeItem('destinations', dest.id, dest.name), `Eliminar destino ${dest.name}`)}
                   </div>
 
+                  {/* Desde lg: imagen a la izquierda y campos a la derecha, para no apilar todo en una columna larga. */}
+                  <div className="space-y-3 md:space-y-4 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6">
+                  <ImageUpload
+                    currentImage={dest.image}
+                    onImageChange={(url) => updateDestination(dest.id, { image: url })}
+                    label="Imagen del destino"
+                    recommendedResolution="1200x800px"
+                    maxDimension={1200}
+                  />
+
+                  <div className="space-y-3 md:space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <div>
                       <label htmlFor={`dest-${dest.id}-name`} className={labelClass}>Nombre</label>
@@ -370,21 +399,13 @@ export function Admin() {
                     </div>
                   </div>
 
-                  <ImageUpload
-                    currentImage={dest.image}
-                    onImageChange={(url) => updateDestination(dest.id, { image: url })}
-                    label="Imagen del destino"
-                    recommendedResolution="1200x800px"
-                    maxDimension={1200}
-                  />
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor={`dest-${dest.id}-rating`} className={labelClass}>Rating (0 a 5)</label>
                       <input id={`dest-${dest.id}-rating`} type="number" step="0.1" min="0" max="5" value={dest.rating} onChange={(e) => updateDestination(dest.id, { rating: numberFrom(e.target.value, 0, 5) })} className={inputClass} />
                     </div>
                     <div>
-                      <label htmlFor={`dest-${dest.id}-reviews`} className={labelClass}>Reseñas</label>
+                      <label htmlFor={`dest-${dest.id}-reviews`} className={labelClass}>Reseñas (con 0 no se muestra la valoración)</label>
                       <input id={`dest-${dest.id}-reviews`} type="number" min="0" step="1" value={dest.reviews} onChange={(e) => updateDestination(dest.id, { reviews: Math.round(numberFrom(e.target.value, 0, 1_000_000)) })} className={inputClass} />
                     </div>
                   </div>
@@ -401,6 +422,8 @@ export function Admin() {
                     value={dest.highlights}
                     onChange={(highlights) => updateDestination(dest.id, { highlights })}
                   />
+                  </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -509,6 +532,16 @@ export function Admin() {
                     {deleteButton(() => removeItem('testimonials', test.id, test.name), `Eliminar testimonio de ${test.name}`)}
                   </div>
 
+                  <div className="space-y-3 md:space-y-4 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6">
+                  <ImageUpload
+                    currentImage={test.image}
+                    onImageChange={(url) => updateTestimonial(test.id, { image: url })}
+                    label="Foto de perfil (opcional)"
+                    recommendedResolution="150x150px"
+                    maxDimension={300}
+                  />
+
+                  <div className="space-y-3 md:space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <div>
                       <label htmlFor={`test-${test.id}-name`} className={labelClass}>Nombre</label>
@@ -529,20 +562,88 @@ export function Admin() {
                     </select>
                   </div>
 
-                  <ImageUpload
-                    currentImage={test.image}
-                    onImageChange={(url) => updateTestimonial(test.id, { image: url })}
-                    label="Foto de perfil (opcional)"
-                    recommendedResolution="150x150px"
-                    maxDimension={300}
-                  />
-
                   <div>
                     <label htmlFor={`test-${test.id}-text`} className={labelClass}>Testimonio</label>
                     <textarea id={`test-${test.id}-text`} rows={4} maxLength={400} value={test.text} onChange={(e) => updateTestimonial(test.id, { text: e.target.value })} className={inputClass} />
                   </div>
+                  </div>
+                  </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'experiences' && (
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h2 className="text-xl md:text-2xl">Experiencias</h2>
+                {addButton(draft.experiences.length, 'Agregar Experiencia', () =>
+                  update({
+                    experiences: [
+                      ...draft.experiences,
+                      { id: nextId(draft.experiences), title: 'Nueva experiencia', text: '', videoUrl: '' },
+                    ],
+                  })
+                )}
+              </div>
+
+              <p className="text-sm text-gray-600">
+                Videos de viajes que ya hicieron. Sube el video a YouTube (puede ser "No listado") o Vimeo y pega aquí el enlace.
+              </p>
+
+              {draft.experiences.length === 0 && <p className="text-gray-600">No hay experiencias. La sección no se mostrará en el sitio.</p>}
+
+              {draft.experiences.map((exp) => {
+                const videoOk = parseVideoUrl(exp.videoUrl) !== null;
+                return (
+                  <div key={exp.id} className="border-2 border-gray-200 rounded-lg p-4 md:p-6 space-y-3 md:space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base md:text-lg font-semibold">{exp.title || `Experiencia #${exp.id}`}</h3>
+                      {deleteButton(() => removeItem('experiences', exp.id, exp.title), `Eliminar experiencia ${exp.title}`)}
+                    </div>
+
+                    <div className="space-y-3 md:space-y-4 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6">
+                      <div>
+                        {videoOk ? (
+                          <ExperienceVideo experience={exp} />
+                        ) : (
+                          <div className="aspect-video rounded-lg bg-gray-100 flex items-center justify-center p-4 text-center text-sm text-gray-600">
+                            La vista previa aparece al pegar un enlace válido.
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-3 md:space-y-4">
+                        <div>
+                          <label htmlFor={`exp-${exp.id}-video`} className={labelClass}>Enlace del video</label>
+                          <input
+                            id={`exp-${exp.id}-video`}
+                            type="url"
+                            inputMode="url"
+                            value={exp.videoUrl}
+                            onChange={(e) => updateExperience(exp.id, { videoUrl: e.target.value.trim() })}
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            aria-invalid={exp.videoUrl && !videoOk ? true : undefined}
+                            aria-describedby={`exp-${exp.id}-video-help`}
+                            className={inputClass}
+                          />
+                          <p id={`exp-${exp.id}-video-help`} className={`text-xs md:text-sm mt-2 ${exp.videoUrl && !videoOk ? 'text-red-600' : 'text-gray-600'}`}>
+                            YouTube (incluye Shorts), Vimeo o un archivo .mp4/.webm. Debe empezar con https://
+                          </p>
+                        </div>
+                        <div>
+                          <label htmlFor={`exp-${exp.id}-title`} className={labelClass}>Título</label>
+                          <input id={`exp-${exp.id}-title`} type="text" maxLength={60} value={exp.title} onChange={(e) => updateExperience(exp.id, { title: e.target.value })} className={inputClass} />
+                        </div>
+                        <div>
+                          <label htmlFor={`exp-${exp.id}-text`} className={labelClass}>Texto</label>
+                          <textarea id={`exp-${exp.id}-text`} rows={4} maxLength={400} value={exp.text} onChange={(e) => updateExperience(exp.id, { text: e.target.value })} className={inputClass} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 

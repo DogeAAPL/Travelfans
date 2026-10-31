@@ -7,10 +7,16 @@ import { Carousel } from './Carousel';
 export function Testimonials() {
   const { t } = useTranslation();
   const { content } = useContent();
-  if (content.testimonials.length === 0) return null;
+  const hasTestimonials = content.testimonials.length > 0;
+  // Sin opiniones cargadas se muestra solo la invitación final, sin título ni ancla de "Opiniones".
   return (
-    <section id="testimonios" aria-labelledby="testimonios-title" className="py-24 md:py-32 bg-gradient-to-b from-purple-50 to-white">
+    <section
+      id={hasTestimonials ? 'testimonios' : undefined}
+      aria-labelledby={hasTestimonials ? 'testimonios-title' : 'testimonios-cta-title'}
+      className="py-24 md:py-32 bg-gradient-to-b from-purple-50 to-white"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {hasTestimonials && (<>
         <div className="text-center mb-12 md:mb-16">
           <h2 id="testimonios-title" className="text-4xl md:text-5xl mb-4">
             <span className="bg-gradient-to-r from-[#c026d3] to-[#9333ea] bg-clip-text text-transparent">
@@ -67,9 +73,10 @@ export function Testimonials() {
           ))}
           </Carousel>
         </div>
+        </>)}
 
-        <div className="mt-16 bg-gradient-to-r from-[#c026d3] to-[#9333ea] rounded-2xl p-8 md:p-12 text-center text-white">
-          <h3 className="text-3xl md:text-4xl mb-4">{t('testimonials.ctaTitle')}</h3>
+        <div className={`${hasTestimonials ? 'mt-16' : ''} bg-gradient-to-r from-[#c026d3] to-[#9333ea] rounded-2xl p-8 md:p-12 text-center text-white`}>
+          <h3 id="testimonios-cta-title" className="text-3xl md:text-4xl mb-4">{t('testimonials.ctaTitle')}</h3>
           <p className="text-xl mb-8 text-white">{t('testimonials.ctaSubtitle')}</p>
           <a
             {...whatsappLinkProps(content.whatsappNumber, t('testimonials.ctaMessage'), 'testimonials_cta')}

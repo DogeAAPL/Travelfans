@@ -15,8 +15,13 @@ export function Navbar() {
     { id: 'inicio', label: t('nav.home') },
     { id: 'destinos', label: t('nav.destinations') },
     { id: 'paquetes', label: t('nav.packages') },
+    { id: 'experiencias', label: t('nav.experiences') },
     { id: 'testimonios', label: t('nav.opinions') },
-  ];
+  ].filter(link =>
+    link.id === 'experiencias' ? content.experiences.length > 0
+    : link.id === 'testimonios' ? content.testimonials.length > 0
+    : true
+  );
 
   const goTo = (id: string) => {
     scrollToSection(id);

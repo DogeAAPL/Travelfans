@@ -88,11 +88,9 @@ const supabaseRepository: ContentRepository = {
   shared: true,
   async load() {
     const { data, error } = await supabase!.from('site_content').select('data').eq('id', 1).maybeSingle();
-    if (error) {
-      // Sin conexión o Supabase pausado: el sitio sigue mostrándose con el contenido por defecto.
-      console.error('No se pudo cargar el contenido desde Supabase:', error.message);
-      return defaultContent;
-    }
+    // Se lanza en vez de devolver el contenido por defecto: si el panel lo tomara como real,
+    // al guardar sobrescribiría el contenido publicado. ContentContext decide el respaldo.
+    if (error) throw new Error(`No se pudo cargar el contenido desde Supabase: ${error.message}`);
     return data ? sanitizeContent(data.data) : defaultContent;
   },
   async save(content) {

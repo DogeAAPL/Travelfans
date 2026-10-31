@@ -107,7 +107,9 @@ export function Footer() {
               </li>
               <li><a href="mailto:info@travelfans.com" className={linkClass}>{t('footer.email')}</a></li>
               <li><a href="#inicio" className={linkClass}>{t('footer.about')}</a></li>
-              <li><a href="#testimonios" className={linkClass}>{t('footer.opinions')}</a></li>
+              {content.testimonials.length > 0 && (
+                <li><a href="#testimonios" className={linkClass}>{t('footer.opinions')}</a></li>
+              )}
               <li><a {...wa(t('footer.termsMessage'), 'footer_terms')} className={linkClass}>{t('footer.terms')}</a></li>
               {analyticsEnabled && (
                 <li>
